@@ -54,6 +54,7 @@ exports.login = async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
+    //console.log(user);
 
     // Compare password
     const isMatch = await bcrypt.compare(password, user.password);
@@ -62,9 +63,19 @@ exports.login = async (req, res) => {
     }
 
     // Generate JWT
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
+    const token = jwt.sign({ id: user._id }, require('../config/auth').secret, { expiresIn: '1d' });
 
     res.status(200).json({ message: "Login successful", token, user });
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+// Get Profile Controller
+exports.getProfile = async (req, res) => {
+  try {
+    const user = await User.findById(req.userId).select('-password');
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
